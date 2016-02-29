@@ -10,16 +10,11 @@ var app = (function() {
   var minor = 0;
   var devices = [];
 
-  // 初期化処理
-  (function() {
-    // 鍵として有効な端末リストの読込
-    fs.readFile('./devices.txt', 'utf8', function (err, text) {
-      devices = text.split('\n').filter(function(device) {
-        // 空の行を取り除く
-        return (device != '');
-      });
-    });
-  })();
+  var changeMajorMinorValue = function() {
+    major = Math.floor(Math.random() * 65536);
+    minor = Math.floor(Math.random() * 65536);
+    console.log({major: major, minor: minor});
+  }
 
   var createHashString = function(data) {
     var text = data + '|' + major + '|' + minor;
@@ -43,6 +38,20 @@ var app = (function() {
     });
     return result;
   };
+
+  // 初期化処理
+  (function() {
+    // 鍵として有効な端末リストの読込
+    fs.readFile('./devices.txt', 'utf8', function (err, text) {
+      devices = text.split('\n').filter(function(device) {
+        // 空の行を取り除く
+        return (device != '');
+      });
+    });
+
+    // major, minor の値を更新
+    changeMajorMinorValue();
+  })();
 
   return {
     auth : auth,
