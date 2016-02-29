@@ -10,12 +10,6 @@ var app = (function() {
   var minor = 0;
   var devices = [];
 
-  var changeMajorMinorValue = function() {
-    major = Math.floor(Math.random() * 65536);
-    minor = Math.floor(Math.random() * 65536);
-    console.log({major: major, minor: minor});
-  }
-
   var createHashString = function(data) {
     var text = data + '|' + major + '|' + minor;
     var hash = crypto.createHash('sha256');
@@ -23,7 +17,7 @@ var app = (function() {
     text = hash.digest('hex');
     console.log({hash: text});
     return text;
-  }
+  };
 
   var auth = function(data) {
     console.log({devices: devices, data: data});
@@ -39,24 +33,34 @@ var app = (function() {
     return result;
   };
 
+  var refresh = function() {
+    // major, minor を変更
+    major = Math.floor(Math.random() * 65536);
+    minor = Math.floor(Math.random() * 65536);
+    console.log({major: major, minor: minor});
+
+    // Beacon 再起動
+    var uuid = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    var measuredPower = -59;
+
+    bleacon.startAdvertising(uuid, major, minor, measuredPower);
+  };
+
   // 初期化処理
   (function() {
     // 鍵として有効な端末リストの読込
-    fs.readFile('./devices.txt', 'utf8', function (err, text) {
+    fs.readFile('./devices.txt', 'utf8', function(err, text) {
       devices = text.split('\n').filter(function(device) {
         // 空の行を取り除く
         return (device != '');
       });
     });
-
-    // major, minor の値を更新
-    changeMajorMinorValue();
+    refresh();
   })();
 
   return {
     auth : auth,
-    major : major,
-    minor : minor
+    refresh : refresh
   };
 })();
 
@@ -72,7 +76,9 @@ http.createServer(function (req, res) {
   // 認証
   if (app.auth(data)) {
     // TODO: ドアを解錠する
-    // TODO: major, minor を更新する
+
+    // major, minor を更新する
+    app.refresh();
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end('200 OK');
@@ -82,8 +88,3 @@ http.createServer(function (req, res) {
     res.end('403 Forbidden');
   }
 }).listen(process.env.SESAME_APP_PORT || 10080);
-
-var uuid = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-var measuredPower = -59;
-
-bleacon.startAdvertising(uuid, app.major, app.minor, measuredPower);
