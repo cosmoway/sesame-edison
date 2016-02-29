@@ -14,7 +14,10 @@ var app = (function() {
   (function() {
     // 鍵として有効な端末リストの読込
     fs.readFile('./devices.txt', 'utf8', function (err, text) {
-      devices = text.split('\n');
+      devices = text.split('\n').filter(function(device) {
+        // 空の行を取り除く
+        return (device != '');
+      });
     });
   })();
 
