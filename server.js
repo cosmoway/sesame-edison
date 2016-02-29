@@ -21,12 +21,17 @@ var app = (function() {
     });
   })();
 
+  var makeHashString = function(data) {
+    var text = data + '|' + major + '|' + minor;
+    return text;
+  }
+
   var auth = function(data) {
     console.log({devices: devices, data: data});
 
     var result = false;
-    devices.forEach(function(device){
-      if (device == data) {
+    devices.forEach(function(device) {
+      if (makeHashString(device) == data) {
         // 認証に成功
         result = true;
         return false;
