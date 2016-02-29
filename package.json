@@ -1,0 +1,24 @@
+{
+  "name": "sesame-edison",
+  "version": "1.0.0",
+  "description": "[![Stories in Ready](https://badge.waffle.io/cosmoway/sesame-edison.svg?label=ready&title=Ready)](http://waffle.io/cosmoway/sesame-edison)",
+  "main": "index.js",
+  "dependencies": {
+    "crypto": "^0.0.3",
+    "http": "^0.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cosmoway/sesame-edison.git"
+  },
+  "author": "COSMOWAY inc.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cosmoway/sesame-edison/issues"
+  },
+  "homepage": "https://github.com/cosmoway/sesame-edison#readme"
+}
