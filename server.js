@@ -9,6 +9,7 @@ var app = (function() {
   var major = 0;
   var minor = 0;
   var devices = [];
+  var timeoutID;
 
   var createHashString = function(data) {
     var text = data + '|' + major + '|' + minor;
@@ -34,6 +35,9 @@ var app = (function() {
   };
 
   var refresh = function() {
+    // タイマーをクリア
+    clearTimeout(timeoutID);
+
     // major, minor を変更
     major = Math.floor(Math.random() * 65536);
     minor = Math.floor(Math.random() * 65536);
@@ -44,6 +48,10 @@ var app = (function() {
     var measuredPower = -59;
 
     bleacon.startAdvertising(uuid, major, minor, measuredPower);
+
+    // 1分ごとにリフレッシュされるようタイマーを設定
+    var delay = 60000;
+    timeoutID = setTimeout(refresh, delay);
   };
 
   // 初期化処理
