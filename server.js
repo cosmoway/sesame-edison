@@ -25,7 +25,7 @@ var app = (function() {
 
     var result = false;
     devices.forEach(function(device) {
-      if (createHashString(device) == data) {
+      if (createHashString(device).toUpperCase() == data.toUpperCase()) {
         // 認証に成功
         result = true;
         return false;
