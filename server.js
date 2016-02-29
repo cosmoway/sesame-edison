@@ -23,7 +23,18 @@ var app = (function() {
 
   var auth = function(data) {
     console.log({devices: devices, data: data});
+
+    var result = false;
+    devices.forEach(function(device){
+      if (device == data) {
+        // 認証に成功
+        result = true;
+        return false;
+      }
+    });
+    return result;
   };
+
   return {
     auth : auth,
     major : major,
