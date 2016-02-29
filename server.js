@@ -21,8 +21,12 @@ var app = (function() {
     });
   })();
 
-  var makeHashString = function(data) {
+  var createHashString = function(data) {
     var text = data + '|' + major + '|' + minor;
+    var hash = crypto.createHash('sha256');
+    hash.update(text);
+    text = hash.digest('hex');
+    console.log({hash: text});
     return text;
   }
 
@@ -31,7 +35,7 @@ var app = (function() {
 
     var result = false;
     devices.forEach(function(device) {
-      if (makeHashString(device) == data) {
+      if (createHashString(device) == data) {
         // 認証に成功
         result = true;
         return false;
