@@ -2,10 +2,14 @@
   "name": "sesame-edison",
   "version": "1.0.0",
   "description": "[![Stories in Ready](https://badge.waffle.io/cosmoway/sesame-edison.svg?label=ready&title=Ready)](http://waffle.io/cosmoway/sesame-edison)",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
     "crypto": "^0.0.3",
-    "http": "^0.0.0"
+    "http": "^0.0.0",
+    "url": "^0.11.0",
+    "qs": "^6.1.0",
+    "fs": "^0.0.2",
+    "bleacon": "^0.4.0"
   },
   "devDependencies": {},
   "scripts": {
