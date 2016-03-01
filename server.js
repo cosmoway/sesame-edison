@@ -47,6 +47,7 @@ var app = (function() {
     var uuid = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     var measuredPower = -59;
 
+    bleacon.stopAdvertising();
     bleacon.startAdvertising(uuid, major, minor, measuredPower);
 
     // 1分ごとにリフレッシュされるようタイマーを設定
