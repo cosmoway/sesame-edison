@@ -3,7 +3,7 @@ var http = require('http')
   , qs = require('qs')
   , fs = require('fs')
   , crypto = require('crypto')
-  , bleacon = require('bleacon');
+  , exec = require('child_process').exec;
 
 var app = (function() {
   var major = 0;
@@ -47,8 +47,14 @@ var app = (function() {
     var uuid = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     var measuredPower = -59;
 
-    bleacon.stopAdvertising();
-    bleacon.startAdvertising(uuid, major, minor, measuredPower);
+    var command = './ibeacon -z && ./ibeacon -u %UUID% -M %major% -m %minor% -p %power%'
+        .replace(/%UUID%/, uuid)
+        .replace(/%major%/, major)
+        .replace(/%minor%/, minor)
+        .replace(/%power%/, measuredPower);
+    exec(command, function(err, stdout, stderr) {
+      console.log({err: err, stdout: stdout, stderr: stderr});
+    });
 
     // 1分ごとにリフレッシュされるようタイマーを設定
     var delay = 60000;
