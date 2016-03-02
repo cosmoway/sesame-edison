@@ -79,6 +79,7 @@ http.createServer(function (req, res) {
   if (data == null) {
     res.writeHead(400, {'Content-Type': 'text/plain'});
     res.end('400 Bad Request');
+    console.log({status: 400, query: query});
     return;
   }
 
@@ -91,9 +92,11 @@ http.createServer(function (req, res) {
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end('200 OK');
+    console.log({status: 200, data: data});
 
   } else {
     res.writeHead(403, {'Content-Type': 'text/plain'});
     res.end('403 Forbidden');
+    console.log({status: 403, data: data});
   }
 }).listen(process.env.SESAME_APP_PORT || 10080);
