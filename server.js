@@ -3,6 +3,7 @@ var http = require('http')
   , qs = require('qs')
   , fs = require('fs')
   , crypto = require('crypto')
+  , dateFormat = require('dateformat')
   , bleacon = require('bleacon');
 
 var app = (function() {
@@ -20,18 +21,45 @@ var app = (function() {
     return text;
   };
 
+  var writeLog = function(file, data) {
+    fs.appendFile('./log/' + file, data ,'utf8', function (err) {
+      console.log(err);
+    });
+  };
+
   var auth = function(data) {
     console.log({devices: devices, data: data});
 
-    var result = false;
+    var uuid = null;
     devices.forEach(function(device) {
       if (createHashString(device).toUpperCase() == data.toUpperCase()) {
         // 認証に成功
-        result = true;
+        uuid = device;
         return false;
       }
     });
-    return result;
+
+    // 結果を log に記録する
+    var logtext = (function(uuid, data) {
+      var result = (uuid != null);
+      var body = result ?
+          'uuid=%uuid%'.replace(/%uuid%/, uuid) :
+          'data=%data%, major=%major%, minor=%minor%'
+              .replace(/%data%/, data)
+              .replace(/%major%/, major)
+              .replace(/%minor%/, minor);
+
+      // 記録する内容は、現在時刻、結果、UUIDの 3点
+      // (認証に失敗した場合は、data, major, minor を記録する)
+      return '[%date%] [%result%] %body%\n'
+          .replace(/%date%/, dateFormat())
+          .replace(/%result%/, result ? 'OK' : 'NG')
+          .replace(/%body%/, body);
+    })(uuid, data);
+    writeLog('auth.log', logtext);
+
+    // uuid があれば認証成功
+    return (uuid != null);
   };
 
   var refresh = function() {

@@ -9,6 +9,7 @@
     "url": "^0.11.0",
     "qs": "^6.1.0",
     "fs": "^0.0.2",
+    "dateformat" : "^1.0.12",
     "bleacon": "^0.4.0"
   },
   "devDependencies": {},
