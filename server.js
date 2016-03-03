@@ -13,7 +13,9 @@ var app = (function() {
   var timeoutID;
 
   var createHashString = function(data) {
-    var text = data + '|' + major + '|' + minor;
+    // data フォーマット `[name]:[uuid]`
+    var uuid = data.split(':').pop();
+    var text = uuid + '|' + major + '|' + minor;
     var hash = crypto.createHash('sha256');
     hash.update(text);
     text = hash.digest('hex');
@@ -30,20 +32,21 @@ var app = (function() {
   var auth = function(data) {
     console.log({devices: devices, data: data});
 
-    var uuid = null;
+    // 該当するデバイス
+    var target = null;
     devices.forEach(function(device) {
       if (createHashString(device).toUpperCase() == data.toUpperCase()) {
         // 認証に成功
-        uuid = device;
+        target = device;
         return false;
       }
     });
 
     // 結果を log に記録する
-    var logtext = (function(uuid, data) {
-      var result = (uuid != null);
+    var logtext = (function(device, data) {
+      var result = (device != null);
       var body = result ?
-          'uuid=%uuid%'.replace(/%uuid%/, uuid) :
+          'name=%name%'.replace(/%name%/, device.split(':')[0]) :
           'data=%data%, major=%major%, minor=%minor%'
               .replace(/%data%/, data)
               .replace(/%major%/, major)
@@ -55,11 +58,11 @@ var app = (function() {
           .replace(/%date%/, dateFormat())
           .replace(/%result%/, result ? 'OK' : 'NG')
           .replace(/%body%/, body);
-    })(uuid, data);
+    })(target, data);
     writeLog('auth.log', logtext);
 
-    // uuid があれば認証成功
-    return (uuid != null);
+    // 該当するデバイスがあれば認証成功
+    return (target != null);
   };
 
   var refresh = function() {
