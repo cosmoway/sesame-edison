@@ -3,6 +3,7 @@ var http = require('http')
   , qs = require('qs')
   , fs = require('fs')
   , crypto = require('crypto')
+  , dateFormat = require('dateformat')
   , exec = require('child_process').exec;
 
 var app = (function() {
@@ -12,7 +13,9 @@ var app = (function() {
   var timeoutID;
 
   var createHashString = function(data) {
-    var text = data + '|' + major + '|' + minor;
+    // data フォーマット `[name]:[uuid]`
+    var uuid = data.split(':').pop();
+    var text = uuid + '|' + major + '|' + minor;
     var hash = crypto.createHash('sha256');
     hash.update(text);
     text = hash.digest('hex');
@@ -20,18 +23,46 @@ var app = (function() {
     return text;
   };
 
+  var writeLog = function(file, data) {
+    fs.appendFile('./log/' + file, data ,'utf8', function (err) {
+      console.log(err);
+    });
+  };
+
   var auth = function(data) {
     console.log({devices: devices, data: data});
 
-    var result = false;
+    // 該当するデバイス
+    var target = null;
     devices.forEach(function(device) {
       if (createHashString(device).toUpperCase() == data.toUpperCase()) {
         // 認証に成功
-        result = true;
+        target = device;
         return false;
       }
     });
-    return result;
+
+    // 結果を log に記録する
+    var logtext = (function(device, data) {
+      var result = (device != null);
+      var body = result ?
+          'name=%name%'.replace(/%name%/, device.split(':')[0]) :
+          'data=%data%, major=%major%, minor=%minor%'
+              .replace(/%data%/, data)
+              .replace(/%major%/, major)
+              .replace(/%minor%/, minor);
+
+      // 記録する内容は、現在時刻、結果、UUIDの 3点
+      // (認証に失敗した場合は、data, major, minor を記録する)
+      return '[%date%] [%result%] %body%\n'
+          .replace(/%date%/, dateFormat())
+          .replace(/%result%/, result ? 'OK' : 'NG')
+          .replace(/%body%/, body);
+    })(target, data);
+    writeLog('auth.log', logtext);
+
+    // 該当するデバイスがあれば認証成功
+    return (target != null);
   };
 
   var refresh = function() {
