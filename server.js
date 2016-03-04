@@ -4,6 +4,7 @@ var http = require('http')
   , fs = require('fs')
   , crypto = require('crypto')
   , dateFormat = require('dateformat')
+  , mraa = require('mraa')
   , exec = require('child_process').exec;
 
 var app = (function() {
@@ -123,6 +124,24 @@ http.createServer(function (req, res) {
   // 認証
   if (app.auth(data)) {
     // TODO: ドアを解錠する
+    var p0 = new mraa.Pwm(20); // J18-7
+    p0.period_us(19500);
+    p0.enable(true);
+    var duty0min = 0.03;
+    var duty0max = 0.128;
+    var duty0 = (duty0min + duty0max) / 2;
+
+    // 位置（角度を中心に移動）、不要か。
+    //p0.write(duty0);
+
+    setTimeout(function(){
+      p0.write(duty0max);
+
+      // GPIO を解放する。
+      setTimeout(function(){
+        p0.enable(false);
+      }, 1000);
+    }, 500);
 
     // major, minor を更新する
     app.refresh();
