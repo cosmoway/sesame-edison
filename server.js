@@ -78,7 +78,7 @@ var app = (function() {
 
     // Beacon 再起動
     var uuid = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    var measuredPower = -59;
+    var measuredPower = 59;
 
     var command = './ibeacon -z && ./ibeacon -u %UUID% -M %major% -m %minor% -p %power%'
         .replace(/%UUID%/, uuid)
