@@ -1,4 +1,5 @@
 // door.js
+var mraa = require('mraa');
 
 var p0 = new mraa.Pwm(20); // J18-7
 p0.period_us(19500);

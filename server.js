@@ -4,7 +4,6 @@ var http = require('http')
   , fs = require('fs')
   , crypto = require('crypto')
   , dateFormat = require('dateformat')
-  , mraa = require('mraa')
   , exec = require('child_process').exec
   , door = require('./door.js');
 
