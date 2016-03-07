@@ -4,8 +4,11 @@ var http = require('http')
   , fs = require('fs')
   , crypto = require('crypto')
   , dateFormat = require('dateformat')
+  , slack = require('simple-slack-webhook')
   , exec = require('child_process').exec
   , door = require('./door.js');
+
+slack.init({ path: process.env.SLACK_WEBHOOK_URL });
 
 var app = (function() {
   var major = 0;
@@ -61,6 +64,13 @@ var app = (function() {
           .replace(/%body%/, body);
     })(target, data);
     writeLog('auth.log', logtext);
+
+    // 結果を Slack に通知
+    if (target != null) {
+      var name = target.split(':')[0];
+      var message = '%name% さんが鍵を開けました'.replace(/%name%/, name);
+      slack.text(message);
+    }
 
     // 該当するデバイスがあれば認証成功
     return (target != null);
