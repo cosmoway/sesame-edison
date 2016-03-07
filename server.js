@@ -4,11 +4,15 @@ var http = require('http')
   , fs = require('fs')
   , crypto = require('crypto')
   , dateFormat = require('dateformat')
+  , nextTime = require('next-time')
   , slack = require('simple-slack-webhook')
   , exec = require('child_process').exec
   , door = require('./door.js');
 
 slack.init({ path: process.env.SLACK_WEBHOOK_URL });
+
+// 解錠後、次に解錠を受け付ける時間
+var nextUnlockingDate　= new Date();
 
 var app = (function() {
   var major = 0;
@@ -133,9 +137,16 @@ http.createServer(function (req, res) {
 
   // 認証
   if (app.auth(data)) {
-    // ドアを解錠する
-    door.unlock();
-    slack.text('... 解錠しました');
+    var now = new Date();
+
+    // 解錠を受け付ける時間を過ぎていたら
+    if (nextUnlockingDate.getTime() < now.getTime()) {
+      // ドアを解錠する
+      door.unlock();
+      slack.text('... 解錠しました');
+      // 次回は、明日の 6時まで解錠処理を行わない
+      nextUnlockingDate = nextTime('6');
+    }
 
     // major, minor を更新する
     app.refresh();
