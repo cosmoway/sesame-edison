@@ -8,7 +8,7 @@ var duty0max = 0.128;
 var duty0 = (duty0min + duty0max) / 2;
 
 // 解錠処理
-exports.unlock = function() {
+var unlock = function() {
   p0.enable(true);
 
   setTimeout(function() {
@@ -23,7 +23,7 @@ exports.unlock = function() {
 };
 
 // 施錠処理
-exports.lock = function() {
+var lock = function() {
   p0.enable(true);
 
   setTimeout(function() {
@@ -36,3 +36,20 @@ exports.lock = function() {
     }, 20000);
   }, 500);
 };
+
+exports.unlock = unlock;
+exports.lock = lock;
+
+
+// デバッグ用
+// usage: node door.js [unlock|lock]
+{
+  var command = process.argv[2];
+  if (command == 'unlock') {
+    unlock();
+    console.log('Unlock.');
+  } else if (command == 'lock') {
+    lock();
+    console.log('Lock.');
+  }
+}
