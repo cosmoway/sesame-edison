@@ -18,7 +18,7 @@ var unlock = function() {
     // GPIO を解放する。
     setTimeout(function() {
       p0.enable(false);
-    }, 1000);
+    }, 20000);
   }, 500);
 };
 
@@ -33,7 +33,7 @@ var lock = function() {
     // GPIOを解放する。
     setTimeout(function() {
       p0.enable(false);
-    }, 1000);
+    }, 20000);
   }, 500);
 };
 
