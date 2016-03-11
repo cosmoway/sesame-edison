@@ -5,7 +5,8 @@ var http = require('http')
   , crypto = require('crypto')
   , dateFormat = require('dateformat')
   , slack = require('simple-slack-webhook')
-  , bleacon = require('bleacon');
+  , exec = require('child_process').exec
+  , door = require('./door.js');
 
 slack.init({ path: process.env.SLACK_WEBHOOK_URL });
 
@@ -67,7 +68,7 @@ var app = (function() {
     // 結果を Slack に通知
     if (target != null) {
       var name = target.split(':')[0];
-      var message = '%name% さんが鍵を開けました'.replace(/%name%/, name);
+      var message = '解錠要求を受け付けました（%name%）'.replace(/%name%/, name);
       slack.text(message);
     }
 
@@ -86,10 +87,16 @@ var app = (function() {
 
     // Beacon 再起動
     var uuid = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    var measuredPower = -59;
+    var measuredPower = 200;
 
-    bleacon.stopAdvertising();
-    bleacon.startAdvertising(uuid, major, minor, measuredPower);
+    var command = './ibeacon -z && ./ibeacon -u %UUID% -M %major% -m %minor% -p %power%'
+        .replace(/%UUID%/, uuid)
+        .replace(/%major%/, major)
+        .replace(/%minor%/, minor)
+        .replace(/%power%/, measuredPower);
+    exec(command, function(err, stdout, stderr) {
+      console.log({err: err, stdout: stdout, stderr: stderr});
+    });
 
     // 1分ごとにリフレッシュされるようタイマーを設定
     var delay = 60000;
@@ -126,7 +133,9 @@ http.createServer(function (req, res) {
 
   // 認証
   if (app.auth(data)) {
-    // TODO: ドアを解錠する
+    // ドアを解錠する
+    door.unlock();
+    slack.text('... 解錠しました');
 
     // major, minor を更新する
     app.refresh();
