@@ -37,7 +37,7 @@ var app = (function() {
     });
   };
 
-  var auth = function(data) {
+  var auth = function(data, callback) {
     console.log({devices: devices, data: data});
 
     // 該当するデバイス
@@ -69,15 +69,13 @@ var app = (function() {
     })(target, data);
     writeLog('auth.log', logtext);
 
-    // 結果を Slack に通知
+    // 該当するデバイスがあれば認証成功
     if (target != null) {
       var name = target.split(':')[0];
-      var message = '玄関のドアを解錠します...（ :key: %name%）'.replace(/%name%/, name);
-      slack.text(message);
+      callback.onSuccess(name);
+    } else {
+      callback.onFailure();
     }
-
-    // 該当するデバイスがあれば認証成功
-    return (target != null);
   };
 
   var refresh = function() {
@@ -136,27 +134,35 @@ http.createServer(function (req, res) {
   }
 
   // 認証
-  if (app.auth(data)) {
-    var now = new Date();
+  app.auth(data, {
+    // 認証に成功
+    onSuccess: function(name) {
+      var now = new Date();
 
-    // 解錠を受け付ける時間を過ぎていたら
-    if (nextUnlockingDate.getTime() < now.getTime()) {
-      // ドアを解錠する
-      door.unlock();
-      // 次回は、明日の 6時まで解錠処理を行わない
-      nextUnlockingDate = nextTime('6');
+      // 解錠を受け付ける時間を過ぎていたら
+      if (nextUnlockingDate.getTime() < now.getTime()) {
+        // ドアを解錠する
+        door.unlock();
+        // Slack にメッセージを投稿する
+        var message = '玄関のドアを解錠しました（ :key: %name%）'.replace(/%name%/, name);
+        slack.text(message);
+        // 次回は、明日の 6時まで解錠処理を行わない
+        nextUnlockingDate = nextTime('6');
+      }
+
+      // major, minor を更新する
+      app.refresh();
+
+      res.writeHead(200, {'Content-Type': 'text/plain'});
+      res.end('200 OK');
+      console.log({status: 200, data: data});
+    },
+
+    // 認証に失敗
+    onFailure: function() {
+      res.writeHead(403, {'Content-Type': 'text/plain'});
+      res.end('403 Forbidden');
+      console.log({status: 403, data: data});
     }
-
-    // major, minor を更新する
-    app.refresh();
-
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('200 OK');
-    console.log({status: 200, data: data});
-
-  } else {
-    res.writeHead(403, {'Content-Type': 'text/plain'});
-    res.end('403 Forbidden');
-    console.log({status: 403, data: data});
-  }
+  });
 }).listen(process.env.SESAME_APP_PORT || 10080);
