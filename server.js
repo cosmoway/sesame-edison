@@ -33,7 +33,7 @@ var app = (function() {
     });
   };
 
-  var auth = function(data) {
+  var auth = function(data, callback) {
     console.log({devices: devices, data: data});
 
     // 該当するデバイス
@@ -65,15 +65,13 @@ var app = (function() {
     })(target, data);
     writeLog('auth.log', logtext);
 
-    // 結果を Slack に通知
+    // 該当するデバイスがあれば認証成功
     if (target != null) {
       var name = target.split(':')[0];
-      var message = '解錠要求を受け付けました（%name%）'.replace(/%name%/, name);
-      slack.text(message);
+      callback.onSuccess(name);
+    } else {
+      callback.onFailure();
     }
-
-    // 該当するデバイスがあれば認証成功
-    return (target != null);
   };
 
   var refresh = function() {
@@ -132,21 +130,27 @@ http.createServer(function (req, res) {
   }
 
   // 認証
-  if (app.auth(data)) {
-    // ドアを解錠する
-    door.unlock();
-    slack.text('... 解錠しました');
+  app.auth(data, {
+    onSuccess: function(name) {
+      // Slack に通知
+      var message = '解錠要求を受け付けました（%name%）'.replace(/%name%/, name);
+      slack.text(message);
 
-    // major, minor を更新する
-    app.refresh();
+      // ドアを解錠する
+      door.unlock();
+      slack.text('... 解錠しました');
 
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('200 OK');
-    console.log({status: 200, data: data});
+      // major, minor を更新する
+      app.refresh();
 
-  } else {
-    res.writeHead(403, {'Content-Type': 'text/plain'});
-    res.end('403 Forbidden');
-    console.log({status: 403, data: data});
-  }
+      res.writeHead(200, {'Content-Type': 'text/plain'});
+      res.end('200 OK');
+      console.log({status: 200, data: data});
+    },
+    onFailure: function() {
+      res.writeHead(403, {'Content-Type': 'text/plain'});
+      res.end('403 Forbidden');
+      console.log({status: 403, data: data});
+    }
+  });
 }).listen(process.env.SESAME_APP_PORT || 10080);
