@@ -72,7 +72,7 @@ var app = (function() {
     // 結果を Slack に通知
     if (target != null) {
       var name = target.split(':')[0];
-      var message = '解錠要求を受け付けました（%name%）'.replace(/%name%/, name);
+      var message = '玄関のドアを解錠します...（ :key: %name%）'.replace(/%name%/, name);
       slack.text(message);
     }
 
@@ -143,7 +143,6 @@ http.createServer(function (req, res) {
     if (nextUnlockingDate.getTime() < now.getTime()) {
       // ドアを解錠する
       door.unlock();
-      slack.text('... 解錠しました');
       // 次回は、明日の 6時まで解錠処理を行わない
       nextUnlockingDate = nextTime('6');
     }
