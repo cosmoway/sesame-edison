@@ -10,6 +10,7 @@
     "qs": "^6.1.0",
     "fs": "^0.0.2",
     "dateformat" : "^1.0.12",
+    "next-time" : "^0.0.1",
     "simple-slack-webhook" : "^0.0.4"
   },
   "devDependencies": {},

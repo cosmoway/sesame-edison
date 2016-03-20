@@ -4,11 +4,15 @@ var http = require('http')
   , fs = require('fs')
   , crypto = require('crypto')
   , dateFormat = require('dateformat')
+  , nextTime = require('next-time')
   , slack = require('simple-slack-webhook')
   , exec = require('child_process').exec
   , door = require('./door.js');
 
 slack.init({ path: process.env.SLACK_WEBHOOK_URL });
+
+// 解錠後、次に解錠を受け付ける時間
+var nextUnlockingDate　= new Date();
 
 var app = (function() {
   var major = 0;
@@ -131,14 +135,20 @@ http.createServer(function (req, res) {
 
   // 認証
   app.auth(data, {
+    // 認証に成功
     onSuccess: function(name) {
-      // Slack に通知
-      var message = '解錠要求を受け付けました（%name%）'.replace(/%name%/, name);
-      slack.text(message);
+      var now = new Date();
 
-      // ドアを解錠する
-      door.unlock();
-      slack.text('... 解錠しました');
+      // 解錠を受け付ける時間を過ぎていたら
+      if (nextUnlockingDate.getTime() < now.getTime()) {
+        // ドアを解錠する
+        door.unlock();
+        // Slack にメッセージを投稿する
+        var message = '玄関のドアを解錠しました（ :key: %name%）'.replace(/%name%/, name);
+        slack.text(message);
+        // 次回は、明日の 6時まで解錠処理を行わない
+        nextUnlockingDate = nextTime('6');
+      }
 
       // major, minor を更新する
       app.refresh();
@@ -147,6 +157,8 @@ http.createServer(function (req, res) {
       res.end('200 OK');
       console.log({status: 200, data: data});
     },
+
+    // 認証に失敗
     onFailure: function() {
       res.writeHead(403, {'Content-Type': 'text/plain'});
       res.end('403 Forbidden');
