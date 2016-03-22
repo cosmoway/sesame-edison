@@ -1,40 +1,37 @@
 // door.js
 var mraa = require('mraa');
+var duty_lock = 0.06;
+var duty_unlock = 0.105;
 
-var p0 = new mraa.Pwm(20); // J18-7
-p0.period_us(19500);
-var duty0min = 0.03;
-var duty0max = 0.128;
-var duty0 = (duty0min + duty0max) / 2;
-var duty0_lock = 0.06;
-var duty0_unlock = 0.105;
+var servo = new mraa.Pwm(20); // J18-7
+servo.period_us(19500);
 
 // 解錠処理
 var unlock = function() {
-  p0.enable(true);
+  servo.enable(true);
 
   setTimeout(function() {
     // 解錠
-    p0.write(duty0_unlock);
+    servo.write(duty_unlock);
 
     // GPIO を解放する。
     setTimeout(function() {
-      p0.enable(false);
+      servo.enable(false);
     }, 5000);
   }, 500);
 };
 
 // 施錠処理
 var lock = function() {
-  p0.enable(true);
+  servo.enable(true);
 
   setTimeout(function() {
     // 施錠
-    p0.write(duty0_lock);
+    servo.write(duty_lock);
 
     // GPIOを解放する。
     setTimeout(function() {
-      p0.enable(false);
+      servo.enable(false);
     }, 5000);
   }, 500);
 };
