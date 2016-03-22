@@ -6,6 +6,8 @@ p0.period_us(19500);
 var duty0min = 0.03;
 var duty0max = 0.128;
 var duty0 = (duty0min + duty0max) / 2;
+var duty0_lock = 0.06;
+var duty0_unlock = 0.105;
 
 // 解錠処理
 var unlock = function() {
@@ -13,7 +15,7 @@ var unlock = function() {
 
   setTimeout(function() {
     // 解錠
-    p0.write(duty0max);
+    p0.write(duty0_unlock);
 
     // GPIO を解放する。
     setTimeout(function() {
@@ -28,7 +30,7 @@ var lock = function() {
 
   setTimeout(function() {
     // 施錠
-    p0.write(duty0);
+    p0.write(duty0_lock);
 
     // GPIOを解放する。
     setTimeout(function() {
